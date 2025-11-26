@@ -1,52 +1,56 @@
 import React, { useState, useEffect } from "react";
-import { Loader2, Clock, CheckCircle, AlertCircle } from "lucide-react";
+import { Loader2, Clock, CheckCircle, AlertCircle, Zap } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
 
-const ProgressiveLoader = ({ codeLoading, className = "" }) => {
+const ProgressiveLoader = ({ codeLoading, progress = 0, className = "" }) => {
   const [currentStateIndex, setCurrentStateIndex] = useState(0);
   const [dots, setDots] = useState("");
 
   const loadingStates = [
     {
-      text: "Thinking",
+      text: "Analyzing requirements",
       icon: <Loader2 className="w-5 h-5 animate-spin" />,
       color: "text-blue-400",
-      duration: 6000,
+      targetProgress: 15,
     },
     {
-      text: "Wait",
-      icon: <Clock className="w-5 h-5 animate-pulse" />,
+      text: "Designing components",
+      icon: <Loader2 className="w-5 h-5 animate-spin" />,
+      color: "text-purple-400",
+      targetProgress: 35,
+    },
+    {
+      text: "Writing code",
+      icon: <Loader2 className="w-5 h-5 animate-spin" />,
+      color: "text-indigo-400",
+      targetProgress: 65,
+    },
+    {
+      text: "Optimizing performance",
+      icon: <Zap className="w-5 h-5 animate-pulse" />,
       color: "text-amber-400",
-      duration: 6000,
+      targetProgress: 85,
     },
     {
-      text: "Almost done",
-      icon: <CheckCircle className="w-5 h-5 animate-bounce" />,
+      text: "Finalizing website",
+      icon: <CheckCircle className="w-5 h-5" />,
       color: "text-green-400",
-      duration: 5000,
-    },
-    {
-      text: "Delay in response",
-      icon: <AlertCircle className="w-5 h-5 animate-pulse" />,
-      color: "text-red-400",
-      duration: 3000,
+      targetProgress: 100,
     },
   ];
 
-  // Handle state progression
+  // Handle state progression based on progress
   useEffect(() => {
     if (!codeLoading) {
       setCurrentStateIndex(0);
       return;
     }
 
-    const timer = setTimeout(() => {
-      setCurrentStateIndex((prev) =>
-        prev < loadingStates.length - 1 ? prev + 1 : prev
-      );
-    }, loadingStates[currentStateIndex].duration);
-
-    return () => clearTimeout(timer);
-  }, [currentStateIndex, codeLoading]);
+    const currentState = loadingStates[currentStateIndex];
+    if (progress >= currentState.targetProgress && currentStateIndex < loadingStates.length - 1) {
+      setCurrentStateIndex(prev => prev + 1);
+    }
+  }, [progress, codeLoading, currentStateIndex]);
 
   useEffect(() => {
     if (!codeLoading) {
@@ -77,40 +81,70 @@ const ProgressiveLoader = ({ codeLoading, className = "" }) => {
   const currentState = loadingStates[currentStateIndex];
 
   return (
-    <div className={`flex items-center space-x-3 ${className}`}>
-      <div className="flex-shrink-0">
-        <div
-          className={`w-5 h-5 flex items-center justify-center ${currentState.color} transition-colors duration-300`}
-        >
-          {currentState.icon}
+    <div className={`bg-gray-900/90 backdrop-blur-lg border border-white/10 rounded-2xl p-6 ${className}`}>
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+          <Zap className="w-5 h-5 text-cyan-400" />
+          Building Your Website
+        </h3>
+        <div className="text-2xl font-bold text-cyan-400">
+          {Math.round(progress)}%
         </div>
       </div>
 
-      <div className="flex items-center space-x-1">
-        <span
-          className={`text-md font-medium ${currentState.color} transition-all duration-300 ease-in-out`}
+      {/* Progress Bar */}
+      <div className="w-full bg-gray-700 rounded-full h-3 mb-4 overflow-hidden">
+        <motion.div
+          className="h-full bg-gradient-to-r from-cyan-500 to-purple-500 rounded-full relative"
+          initial={{ width: "0%" }}
+          animate={{ width: `${progress}%` }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
         >
-          {currentState.text}
-        </span>
-        <span
-          className={`text-md font-medium ${currentState.color} w-8 text-left`}
-        >
-          {dots}
-        </span>
+          {/* Shimmer Effect */}
+          <motion.div
+            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
+            animate={{ x: [-100, 300] }}
+            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+          />
+        </motion.div>
       </div>
 
-      {/* Progress indicator */}
-      <div className="flex space-x-1">
-        {loadingStates.map((_, index) => (
-          <div
-            key={index}
-            className={`w-2 h-2 rounded-full transition-all duration-300 ${
-              index <= currentStateIndex
-                ? currentState.color.replace("text-", "bg-")
-                : "bg-gray-300"
-            }`}
-          />
-        ))}
+      {/* Current State */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <div className={`w-6 h-6 flex items-center justify-center ${currentState.color}`}>
+            {currentState.icon}
+          </div>
+          <div className="flex items-center space-x-1">
+            <span className={`text-sm font-medium ${currentState.color}`}>
+              {currentState.text}
+            </span>
+            <span className={`text-sm font-medium ${currentState.color} w-6 text-left`}>
+              {dots}
+            </span>
+          </div>
+        </div>
+
+        {/* Stage Indicator */}
+        <div className="flex space-x-1">
+          {loadingStates.map((_, index) => (
+            <div
+              key={index}
+              className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                index <= currentStateIndex
+                  ? currentState.color.replace("text-", "bg-")
+                  : "bg-gray-500"
+              }`}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Time Estimate */}
+      <div className="mt-3 text-xs text-gray-400 flex justify-between">
+        <span>Started</span>
+        <span>ETA: {Math.max(0, Math.round((100 - progress) / 10))}s</span>
       </div>
     </div>
   );
