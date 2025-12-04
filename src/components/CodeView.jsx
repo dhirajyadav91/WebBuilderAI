@@ -205,7 +205,7 @@ function CodeView({
         else setCurrentStage(0);
       }, 800); // Slower interval
 
-      const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:8080";
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:3001";
       const url = `${backendUrl}/chat/code/${chatId}`;
       
       console.log("📡 Calling backend:", url);
